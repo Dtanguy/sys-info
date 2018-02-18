@@ -4,7 +4,7 @@ pack up of different call for get sys data
 
 npm i
 
-```
+```js
 var sysInfo = require('./sys-info');
 
 
