@@ -1,12 +1,12 @@
 {
-  "name": "monitor",
+  "name": "sys-info",
   "version": "1.0.0",
   "description": "",
-  "main": "monitor.js",
+  "main": "sys-info.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "dtanguy",
   "license": "ISC",
   "dependencies": {
     "diskspace": "^2.0.0",
