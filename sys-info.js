@@ -1,7 +1,8 @@
 var os = require('os');
 var osu = require('os-utils');
 var usb = require('usb');
-var diskspace = require('diskspace');
+//var diskspace = require('diskspace');
+var ds = require('fd-diskspace');
 var si = require('systeminformation');
 var tcpp = require('tcp-ping');
 
@@ -99,7 +100,21 @@ function updateHeavy(){
 	}	
 		
 	// DISK
-	try{		
+	try{
+		
+		ds.diskSpace(function(e, res){
+			if(e){
+				heavy.disk = "error pull disk data";
+			}else if(res.total){				
+				heavy.disk.total = Math.trunc(res.total.size);
+				heavy.disk.used = Math.trunc(res.total.used);
+				heavy.disk.free = Math.trunc(res.total.free);
+				heavy.disk.perc = Math.trunc(res.total.percent* 10000)/100;
+				console.log(heavy.disk.perc);
+			}
+		});
+		
+		/*
 		var media = '/';
 		if(os.platform() == "win32"){
 			media = 'C';
@@ -114,6 +129,8 @@ function updateHeavy(){
 				heavy.disk.free = Math.trunc(heavy.disk.free / 1048576);
 			}
 		});	
+		*/		
+		
 	}catch(e){
 		heavy.disk = "error pull disk data";
 	}
