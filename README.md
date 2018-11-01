@@ -1,32 +1,55 @@
 # sys-info
 
-pack up of different call for get sys data
+pack up of different call for get system data.
 
+## Install
+```
 npm i
+```
+
+## Usage
+
+You can put an option parameter in init() for choice what to enable/disable.
+By default everything is enabled, and in case of error the lib automaticaly disable.
 
 ```js
-var sysInfo = require('./sys-info');
+var option = {
+	cpu		: true,
+	ram		: true,
+	ping	: true,
+	temp	: true,
+	os		: true,
+	usb		: true,
+	disk	: true,
+	network	: true,
+	wifi	: true,
+	modem	: true,
+	serial	: true,
+	android	: true,
+	gps		: true		
+};
+```
 
+Set the loop and the callback :
+freq is between 500 and 60000 ms for monitoring
+1000 and 600000 ms for hardware
 
-setInterval(function() { 
+```js
+sysInfo.setFreqMonito(freq, callback);
+sysInfo.setFreqHard(freq, callback);
+```
 
-	//Update CPU, RAM, Ping and temps data
-	sysInfo.updateLight();
-	
-	//Get it
-	var msg = sysInfo.getLight();
-	console.log(msg);
-	
-}, 1000);
+Full example :
 
-setInterval(function() { 
+```js
+var sysInfo = require('./sys-info/sys-info');
+sysInfo.init();
 
-	//Update lsusb, hard drive, OS ans network data
-	sysInfo.updateHeavy();
-	
-	//Get it
-	var msg = sysInfo.getHeavy();
-	console.log(msg);
-	
-}, 60000);
+sysInfo.setFreqMonito(1000, function(data){
+	console.log(data);
+});
+
+sysInfo.setFreqHard(60000, function(data){
+	console.log(data);
+});
 ```
