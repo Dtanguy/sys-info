@@ -14,19 +14,19 @@ By default everything is enabled, and in case of error the lib automaticaly disa
 
 ```js
 var option = {
-	cpu		: true,
-	ram		: true,
+	cpu	: true,
+	ram	: true,
 	ping	: true,
 	temp	: true,
-	os		: true,
-	usb		: true,
+	os	: true,
+	usb	: true,
 	disk	: true,
 	network	: true,
 	wifi	: true,
 	modem	: true,
 	serial	: true,
 	android	: true,
-	gps		: true		
+	gps	: true		
 };
 ```
 
