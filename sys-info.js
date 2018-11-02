@@ -225,22 +225,39 @@ function updateHard(){
 
 	// Modem
 	comparte('modem', function(){	
-	
+		getModem(function(data, err){
+			if(err){
+				disable('modem');
+			}else if(data){
+				heavy.modem = data;
+			}			
+		});
 	});
 	
 	// Serial
 	comparte('serial', function(){	
-	
+		sdf
 	});
 	
 	// Android
 	comparte('android', function(){	
-	
+		sdf
 	});
 	
 	// GPS
 	comparte('gps', function(){	
-	
+		var toSend = {
+			considerIp: true,
+			wifiAccessPoints: heavy.wifi,
+		};             
+		googleGeoloc(toSend, function (data, err) {  
+            if(err){
+				disable('gps');
+            }else if(data){                
+                data.timestamp = Date.now();
+                heavy.gps = data;
+            }            
+        });
 	});
 	
 }
@@ -367,47 +384,115 @@ function parseOutput(str, callback) {
 /***********************************************************************************************************/
 /* MODEM ***************************************************************************************************/
 /***********************************************************************************************************/
+var ccmd = 'sudo ';
 
-function getModemStat(modemNbP){
+function getModem(cb){
+	listModem(cb);
+}
+
+function listModem(cb){
 	
+	exec('mmcli -L', function (err, stdout) {
+		if (err) {
+		  cb({}, erro);
+		  return;
+		}
+
+		var tmp1 = stdout.split('/Modem/')[1]
+		modemNb = parseInt(tmp1.split('[')[0]);
+		
+		var name = stdout.substr(0, stdout.length-2);
+		name = name.split('/');
+		name.shift()
+		name = '/'+name.join('/');
+		var id = name.split(' ')[0];
+		name = name.substr(id.length-1+2);
+		
+		if(0 <= modemNb <= 5){	
+			getModemStat(modemNb, id, name, cb);
+		}	
+		
+	});
+	
+}
+
+function getModemStat(modemNbP, id_, model_, cb){
 	exec('mmcli -m ' + modemNbP + ' --simple-status', function (err, data) {
 		
-		var state, opName, accesTech, signQual;
-		
-		try{
-			state = data.split("state: '")[1].split("'")[0];
-			opName = data.split("operator name: '")[1].split("'")[0];
-			accesTech = data.split("access tech: '")[1].split("'")[0];
-			signQual = data.split("signal quality: '")[1].split("'")[0];
-		}catch(e){
-			
+		if(err || !data){
+			cb({}, erro);
+			return;
 		}
 		
-		connectionData.state = state;
-		connectionData.opName = opName;
-		connectionData.accesTech = accesTech;
-		connectionData.signQual = signQual;			
+		var state_, opName_, accesTech_, signQual_;
 
-		tryMQ.publish('/MONITOR/gsm', connectionData);
-		tryMQ.log('Modem state : ' + state);
-		if( state == 'registered' || state == 'connected' ){
-			en = true;		
-		}else{
-			en = false;	
-			enableModem(modemNbP);	
-		}		
+		if(data.split("state: '") && data.split("state: '")[1] && data.split("state: '")[1].split("'")){
+			state_ = data.split("state: '")[1].split("'")[0];
+		}
+		if(data.split("operator name: '") && data.split("operator name: '")[1] && data.split("operator name: '")[1].split("'")){
+			opName_ = data.split("operator name: '")[1].split("'")[0];
+		}
+		if(data.split("access tech: '") && data.split("access tech: '")[1] && data.split("access tech: '")[1].split("'")){
+			accesTech_ = data.split("access tech: '")[1].split("'")[0];
+		}
+		if(data.split("signal quality: '") && data.split("signal quality: '")[1] && data.split("signal quality: '")[1].split("'")){
+			signQual_ = data.split("signal quality: '")[1].split("'")[0];
+		}
+
+		var connectionData = {
+			id : id_,
+			model: model_,
+			state : state_,
+			opName: opName_,
+			accesTech: accesTech_,
+			signQual: signQual_
+		};
+		cb(connectionData);	
 		
     });
 }
 
 
 /***********************************************************************************************************/
-/* GPS **********************************************************************************************/
+/* GPS *****************************************************************************************************/
 /***********************************************************************************************************/
+const httpreq = require ('httpreq');
+
+var config = {
+    key: 'Yourkey',
+    timeout: 5000
+};
+
+function googleGeoloc(params, callback) {
+
+    const options = {
+      method: 'POST',
+      url: 'https://www.googleapis.com/geolocation/v1/geolocate?key=' + config.key,
+      json: params,
+      timeout: config.timeout
+    };
+  
+    httpreq.doRequest (options, (err, res) => {
+      var data = res && res.body || '';
+  
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        err += e;
+      }
+
+      if (data && data.error) {
+        err += data.error;
+      }
+	  
+      callback (data, err);
+    });
+  }
+  
 
 
 /***********************************************************************************************************/
-/* ANDROID **********************************************************************************************/
+/* ANDROID *************************************************************************************************/
 /***********************************************************************************************************/
 
 
