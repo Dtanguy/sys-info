@@ -394,7 +394,7 @@ function listModem(cb){
 	
 	exec('mmcli -L', function (err, stdout) {
 		if (err) {
-		  cb({}, erro);
+		  cb({}, err);
 		  return;
 		}
 
@@ -420,7 +420,7 @@ function getModemStat(modemNbP, id_, model_, cb){
 	exec('mmcli -m ' + modemNbP + ' --simple-status', function (err, data) {
 		
 		if(err || !data){
-			cb({}, erro);
+			cb({}, err);
 			return;
 		}
 		
