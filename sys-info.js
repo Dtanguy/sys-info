@@ -5,6 +5,7 @@ var usbDetect = require('usb-detection');
 var ds = require('fd-diskspace');
 var si = require('systeminformation');
 var tcpp = require('tcp-ping');
+var fs = require('fs');
 
 // Color console
 [
@@ -22,6 +23,7 @@ var option = {
 	ping	: true,
 	temp	: true,
 	os		: true,
+	piv		: true,
 	usb		: true,
 	disk	: true,
 	network	: true,
@@ -97,8 +99,10 @@ function updateMonito(){
 
 	// RAM
 	comparte('ram', function(){
-		monito.freemem = Math.trunc(os.freemem() / 1048576);
-		monito.totalmem = Math.trunc(os.totalmem() / 1048576);
+		si.mem(function(data){					
+			monito.freemem = Math.trunc(data.available / 1048576);
+			monito.totalmem = Math.trunc(data.total / 1048576);
+		});
 	});
 	
 	// CPU
@@ -203,11 +207,24 @@ function updateHard(){
 	});
 	
 	// OS
-	comparte('usb', function(){			
+	comparte('os', function(){			
 		heavy.sysUptime = osu.sysUptime();
 		heavy.platform = os.platform();
 		heavy.hostname = os.hostname();
 	});
+	
+	// Pi version
+	comparte('piv', function(){			
+		heavy.sysUptime = osu.sysUptime();
+		heavy.platform = os.platform();
+		heavy.hostname = os.hostname();
+		
+		var cpu_info = fs.readFileSync(CPU_INFO_FILE_PATH).toString();
+		cpu_info = cpu_info.slice(cpu_info.lastIndexOf("Revision") , cpu_info.length);
+		revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
+		heavy.piv = ras_tab[revision];
+	});
+	
 		
 	// DISK
 	comparte('disk', function(){	
@@ -492,10 +509,51 @@ function googleGeoloc(params, callback) {
 
 
 /***********************************************************************************************************/
-/* ANDROID *************************************************************************************************/
+/* RPI Version**********************************************************************************************/
 /***********************************************************************************************************/
 
 
+var CPU_INFO_FILE_PATH = "/proc/cpuinfo";
+
+var ras_tab = {
+  "0002"   : "Model_B_Revision_1.0",
+  "0003"   : "Model_B_Revision_1.0_ECN0001",
+  "0004"   : "Model_B_Revision_2.0",
+  "0005"   : "Model_B_Revision_2.0",
+  "0006"   : "Model_B_Revision_2.0",
+  "0007"   : "Model_A",
+  "0008"   : "Model_A",
+  "0009"   : "Model_A",
+  "0010"   : "Model_B+",
+  "900032" : "Model_B+_Revision_1.2",
+  "0011"   : "Compute_Module",
+  "0012"   : "Model_A+",
+  "900021" : "Model_A+_Revision_1.1",
+  "0013"   : "Model_B+_Revision_1.2",
+  "0014"   : "Compute_Module",
+  "000d"   : "Model_B_Revision_2.0",
+  "000e"   : "Model_B_Revision_2.0",
+  "000f"   : "Model_B_Revision_2.0",
+  "a020a0" : "Compute_Module_3",
+  "a01040" : "Model_B_PI_2",
+  "a01041" : "Model_B_PI_2_Revision_1.1",
+  "a21041" : "Model_B_PI_2",
+  "a02082" : "Model_B_PI_3",
+  "a22042" : "Model_B_PI_2_Revision_1.2",
+  "a22082" : "Model_B_PI_3",
+  "a32082" : "Model_B_PI_3",
+  "a020d3" : "Model_B+_PI_3", 
+  "900092" : "Model_PiZero_Revision_1.2",
+  "900093" : "Model_PiZero_Revision_1.3",
+  "920093" : "Model_PiZero_Revision_1.3",
+  "9000c1" : "Model_PiZeroW_Revision_1.1"
+};
+
+
+
+/***********************************************************************************************************/
+/* ANDROID *************************************************************************************************/
+/***********************************************************************************************************/
 
 
 module.exports.init = init;
