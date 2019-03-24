@@ -12,6 +12,7 @@
     "diskspace": "^2.0.0",
     "fd-diskspace": "^1.0.0",
     "forever": "^0.15.3",
+    "httpreq": "^0.4.24",
     "lodash": "^4.17.11",
     "node-cmd": "^3.0.0",
     "os-utils": "0.0.14",
