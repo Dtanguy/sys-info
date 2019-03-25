@@ -6,6 +6,7 @@ var ds = require('fd-diskspace');
 var si = require('systeminformation');
 var tcpp = require('tcp-ping');
 var fs = require('fs');
+const SerialPort = require('serialport');
 
 // Color console
 [
@@ -253,7 +254,11 @@ function updateHard(){
 	
 	// Serial
 	comparte('serial', function(){	
-		sdf
+		SerialPort.list(function (err, ports) {
+			listPort = ports;
+			ports.timestamp = Date.now();
+            heavy.serial = ports;
+		});
 	});
 	
 	// Android
