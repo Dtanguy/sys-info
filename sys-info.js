@@ -7,6 +7,7 @@ var si = require('systeminformation');
 var tcpp = require('tcp-ping');
 var fs = require('fs');
 const SerialPort = require('serialport');
+var psList = require('ps-list');
 
 // Color console
 [
@@ -28,6 +29,7 @@ var option = {
 	usb		: true,
 	disk	: true,
 	network	: true,
+	process : true,
 	wifi	: true,
 	modem	: true,
 	serial	: true,
@@ -147,11 +149,16 @@ var heavy = {
 	sysUptime: -1,
 	platform: -1,
 	hostname: -1,
+	piv: -1,
+	process: [],
 	lsusb: [],
 	network: {},
 	disk: {},
 	wifi: {},
-	modem: {}
+	modem: {},
+	serial: {},
+	gps: {},
+	android: {}
 };
 
 var hardInterval;
@@ -173,115 +180,172 @@ function setFreqHard(freq, cb){
 }
 
 function updateHard(){
-	
-	// Wifi scann
-	comparte('wifi', function(){
-		wifiScann(function(data, err){
-			if(err){
-				disable('wifi');
-			}else if(data){
-				heavy.wifi = data;
+	updateSelected('wifi');
+	updateSelected('network');
+	updateSelected('usb');
+	updateSelected('os');
+	updateSelected('piv');
+	updateSelected('disk');
+	updateSelected('process');
+	updateSelected('modem');
+	updateSelected('serial');
+	updateSelected('android');
+	updateSelected('gps');	
+}
+
+function updateSelected(name, cb){	
+
+	comparte(name, function(){
+		
+		// WIFI
+		if(name=='wifi'){		
+			wifiScann(function(data, err){
+				if(err){
+					disable('wifi');
+				}else if(data){
+					heavy.wifi = data;
+				}
+				if(cb){
+					cb(heavy.wifi);
+				}
+			});	
+		}
+		
+		// Network
+		else if(name=='network'){
+			heavy.network = {};	
+			var net = os.networkInterfaces();
+			for (var co in net) {	
+				if(co != "lo"){
+					heavy.network[co] = net[co];
+				}
 			}
-		});	
-	});
-	
-	// Network
-	comparte('network', function(){		
-		heavy.network = {};	
-		var net = os.networkInterfaces();
-		for (var co in net) {	
-			if(co != "lo"){
-				heavy.network[co] = net[co];
+			if(cb){
+				cb(heavy.network);
 			}
 		}
-	});
-
-	// USB
-	comparte('usb', function(){	
-		usbDetect.find(function(err, devices) {
-			if(err){
-				disable('usb');
-			}else{
-				heavy.lsusb = devices; 
-			}
-		});
-	});
-	
-	// OS
-	comparte('os', function(){			
-		heavy.sysUptime = osu.sysUptime();
-		heavy.platform = os.platform();
-		heavy.hostname = os.hostname();
-	});
-	
-	// Pi version
-	comparte('piv', function(){			
-		heavy.sysUptime = osu.sysUptime();
-		heavy.platform = os.platform();
-		heavy.hostname = os.hostname();
 		
-		var cpu_info = fs.readFileSync(CPU_INFO_FILE_PATH).toString();
-		cpu_info = cpu_info.slice(cpu_info.lastIndexOf("Revision") , cpu_info.length);
-		revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
-		heavy.piv = ras_tab[revision];
-	});
-	
+		// USB
+		else if(name=='usb'){
+			usbDetect.find(function(err, devices) {
+				if(err){
+					disable('usb');
+				}else{
+					heavy.lsusb = devices; 
+				}
+				if(cb){
+					cb(heavy.lsusb);
+				}
+			});
+		}
 		
-	// DISK
-	comparte('disk', function(){	
-		ds.diskSpace(function(e, res){
-			if(e){
-				disable('disk');
-			}else if(res.total){				
-				heavy.disk.total = Math.trunc(res.total.size);
-				heavy.disk.used = Math.trunc(res.total.used);
-				heavy.disk.free = Math.trunc(res.total.free);
-				heavy.disk.perc = Math.trunc(res.total.percent* 10000)/100;
+		// OS
+		else if(name=='os'){			
+			heavy.sysUptime = osu.sysUptime();
+			heavy.platform = os.platform();
+			heavy.hostname = os.hostname();
+			if(cb){
+				cb(heavy.hostname);
 			}
-		});
-	});
+		}
+		
+		// Pi version
+		else if(name=='piv'){
+			var cpu_info = fs.readFileSync(CPU_INFO_FILE_PATH).toString();
+			cpu_info = cpu_info.slice(cpu_info.lastIndexOf("Revision") , cpu_info.length);
+			revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
+			heavy.piv = ras_tab[revision];
+			if(cb){
+				cb(heavy.piv);
+			}
+		}
+		
+			
+		// DISK
+		else if(name=='disk'){
+			ds.diskSpace(function(e, res){
+				if(e){
+					disable('disk');
+				}else if(res.total){				
+					heavy.disk.total = Math.trunc(res.total.size);
+					heavy.disk.used = Math.trunc(res.total.used);
+					heavy.disk.free = Math.trunc(res.total.free);
+					heavy.disk.perc = Math.trunc(res.total.percent* 10000)/100;
+				}
+				if(cb){
+					cb(heavy.disk);
+				}
+			});
+		}
+		
+		// Process list
+		else if(name=='process'){		
+			psList().then(data => {
+				/*if(e){
+					disable('process');
+				}else if(data){*/			
+					heavy.process = data;
+				//}
+				if(cb){
+					cb(heavy.process);
+				}
+			});
+		}	
 
-	// Modem
-	comparte('modem', function(){	
-		getModem(function(data, err){
-			if(err){
-				disable('modem');
-			}else if(data){
-				heavy.modem = data;
-			}			
-		});
+		// Modem
+		else if(name=='modem'){	
+			getModem(function(data, err){
+				if(err){
+					disable('modem');
+				}else if(data){
+					heavy.modem = data;
+				}	
+				if(cb){
+					cb(heavy.modem);
+				}				
+			});
+		}
+		
+		// Serial
+		else if(name=='serial'){
+			SerialPort.list(function (err, ports) {
+				listPort = ports;
+				ports.timestamp = Date.now();
+				heavy.serial = ports;
+				if(cb){
+					cb(heavy.serial);
+				}
+			});
+		}
+		
+		// Android
+		else if(name=='android'){
+			gfhfgh
+			if(cb){
+				cb();
+			}
+		}
+		
+		// GPS
+		else if(name=='gps'){
+			var toSend = {
+				considerIp: true,
+				wifiAccessPoints: heavy.wifi,
+			};             
+			googleGeoloc(toSend, function (data, err) {  
+				if(err){
+					disable('gps');
+				}else if(data){                
+					data.timestamp = Date.now();
+					heavy.gps = data;
+				} 
+				if(cb){
+					cb(heavy.gps);
+				}				
+			});
+		}
+		
 	});
-	
-	// Serial
-	comparte('serial', function(){	
-		SerialPort.list(function (err, ports) {
-			listPort = ports;
-			ports.timestamp = Date.now();
-            heavy.serial = ports;
-		});
-	});
-	
-	// Android
-	comparte('android', function(){	
-		sdf
-	});
-	
-	// GPS
-	comparte('gps', function(){	
-		var toSend = {
-			considerIp: true,
-			wifiAccessPoints: heavy.wifi,
-		};             
-		googleGeoloc(toSend, function (data, err) {  
-            if(err){
-				disable('gps');
-            }else if(data){                
-                data.timestamp = Date.now();
-                heavy.gps = data;
-            }            
-        });
-	});
-	
 }
 
 
@@ -570,4 +634,4 @@ module.exports.updateMonito = updateMonito;
 module.exports.getHard = getHard;
 module.exports.setFreqHard = setFreqHard;
 module.exports.updateHard = updateHard;
-
+module.exports.updateSelected = updateSelected;
