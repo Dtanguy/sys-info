@@ -1,7 +1,11 @@
 var os = require('os');
 var osu = require('os-utils');
 var usb = require('usb');
-var usbDetect = require('usb-detection');
+try{		
+	var usbDetect = require('usb-detection');
+}catch(e){
+	console.error('Fail load usb-detect');
+}
 var ds = require('fd-diskspace');
 var si = require('systeminformation');
 var tcpp = require('tcp-ping');
@@ -228,16 +232,18 @@ function updateSelected(name, cb){
 		
 		// USB
 		else if(name=='usb'){
-			usbDetect.find(function(err, devices) {
-				if(err){
-					disable('usb');
-				}else{
-					heavy.lsusb = devices; 
-				}
-				if(cb){
-					cb(heavy.lsusb);
-				}
-			});
+			try{		
+				usbDetect.find(function(err, devices) {
+					if(err){
+						disable('usb');
+					}else{
+						heavy.lsusb = devices; 
+					}
+					if(cb){
+						cb(heavy.lsusb);
+					}
+				});
+			}catch(e){}
 		}
 		
 		// OS
@@ -361,22 +367,24 @@ var USBchangeCb;
 function initUSB(_USBchangeCb){
 	if(_USBchangeCb){
 		USBchangeCb = _USBchangeCb;
-		usbDetect.startMonitoring();
+		try{
+			usbDetect.startMonitoring();
+		}catch(e){}
 	}
 }
 
-usbDetect.on('add', function(device) {
-	if(USBchangeCb){
-		USBchangeCb('add', device);
-	}
-});
-
-usbDetect.on('remove', function(device) {
-	if(USBchangeCb){
-		USBchangeCb('remove', device);
-	}
-});
-
+try {
+	usbDetect.on('add', function(device) {
+		if(USBchangeCb){
+			USBchangeCb('add', device);
+		}
+	});
+	usbDetect.on('remove', function(device) {
+		if(USBchangeCb){
+			USBchangeCb('remove', device);
+		}
+	});
+}catch(e){}
 
 
 /***********************************************************************************************************/
