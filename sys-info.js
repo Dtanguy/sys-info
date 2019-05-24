@@ -10,6 +10,7 @@ const SerialPort = require('serialport');
 var psList = require('ps-list');
 
 // Color console
+/*
 [
 	[ 'warn',  '\x1b[35m' ],
 	[ 'error', '\x1b[31m' ],
@@ -18,7 +19,7 @@ var psList = require('ps-list');
 	var method = pair[0], reset = '\x1b[0m', color = '\x1b[36m' + pair[1];
 	console[method] = console[method].bind(console, color, method.toUpperCase(), reset);
 });	
-
+*/
 var option = {
 	cpu		: true,
 	ram		: true,
