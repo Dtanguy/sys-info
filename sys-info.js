@@ -134,11 +134,15 @@ function updateMonito(){
 	});
 	
 	// TEMP
-	comparte('temp', function(){
-		si.cpuTemperature(function(tmp){					
+	//comparte('temp', function(){
+		si.cpuTemperature(function(tmp){
+			//Fix for OrangePi
+			if(tmp.main > 0 && tmp.main < 1){
+				tmp.main = tmp.main * 1000;
+			}
 			monito.temp = tmp.main;
 		});
-	});	
+	//});	
 	
 }
 
