@@ -69,7 +69,8 @@ var monito = {
 
 var monitoInterval;
 function getMonito(){
-	return monito;
+	//For a real copy non editable
+	return JSON.parse(JSON.stringify(monito));
 }
 
 function setFreqMonito(freq, cb){
@@ -103,8 +104,8 @@ function disable(name){
 	option[name] = false;
 }
 
-function updateMonito(){	
-
+function updateMonito(){
+	
 	// RAM
 	comparte('ram', function(){
 		si.mem(function(data){					
@@ -168,7 +169,8 @@ var heavy = {
 
 var hardInterval;
 function getHard(){
-	return heavy;
+	//For a real copy non editable
+	return JSON.parse(JSON.stringify(heavy));
 }
 
 function setFreqHard(freq, cb){
@@ -643,4 +645,5 @@ module.exports.updateMonito = updateMonito;
 module.exports.getHard = getHard;
 module.exports.setFreqHard = setFreqHard;
 module.exports.updateHard = updateHard;
+
 module.exports.updateSelected = updateSelected;
