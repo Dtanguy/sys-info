@@ -494,6 +494,9 @@ function listModem(cb){
 		}
 
 		var tmp1 = stdout.split('/Modem/')[1]
+		if(!tmp1){
+			return;
+		}
 		modemNb = parseInt(tmp1.split('[')[0]);
 		
 		var name = stdout.substr(0, stdout.length-2);
