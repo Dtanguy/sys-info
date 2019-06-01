@@ -1,6 +1,10 @@
 var os = require('os');
 var osu = require('os-utils');
-var usb = require('usb');
+try{		
+	var usb = require('usb');
+}catch(e){
+	console.error('Fail load usb');
+}
 try{		
 	var usbDetect = require('usb-detection');
 }catch(e){
@@ -10,7 +14,11 @@ var ds = require('fd-diskspace');
 var si = require('systeminformation');
 var tcpp = require('tcp-ping');
 var fs = require('fs');
-const SerialPort = require('serialport');
+try{		
+	const SerialPort = require('serialport');
+}catch(e){
+	console.error('Fail load SerialPort');
+}
 var psList = require('ps-list');
 
 // Color console
