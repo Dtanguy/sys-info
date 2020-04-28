@@ -19,7 +19,6 @@
     "ps-list": "^6.3.0",
     "serialport": "^7.1.4",
     "systeminformation": "^3.33.5",
-    "tcp-ping": "^0.1.1",
-    "usb-detection": "^4.1.0"
+    "tcp-ping": "^0.1.1"
   }
 }
