@@ -6,8 +6,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "dtanguy",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dtanguy/sysInfo.git"
+  },
+  "author": "Dtanguy",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dtanguy/sysInfo/issues"
+  },
+  "homepage": "https://github.com/Dtanguy/sysInfo#readme",
   "dependencies": {
     "diskspace": "^2.0.0",
     "fd-diskspace": "^1.0.0",
