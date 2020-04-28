@@ -1,10 +1,10 @@
-# sys-info
+# sysInfo
 
 pack up of different call for get system data.
 
 ## Install
 ```
-npm i
+npm i "git+https://github.com/Dtanguy/sysInfo.git" --save
 ```
 
 ## Usage
@@ -42,7 +42,7 @@ sysInfo.setFreqHard(freq, callback);
 Full example :
 
 ```js
-var sysInfo = require('./sys-info/sys-info');
+var sysInfo = require('sysInfo');
 sysInfo.init();
 
 sysInfo.setFreqMonito(1000, function(data){
