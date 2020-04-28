@@ -20,7 +20,7 @@
     "serialport": "^7.1.4",
     "systeminformation": "^3.33.5",
     "tcp-ping": "^0.1.1",
-    "usb": "^1.2.0",
+    /*"usb": "^1.2.0",*/
     "usb-detection": "^4.1.0"
   }
 }
