@@ -1,4 +1,4 @@
-# sysInfo
+# sys-info
 
 pack up of different call for get system data.
 
