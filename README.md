@@ -4,7 +4,7 @@ pack up of different call for get system data.
 
 ## Install
 ```
-npm i "git+https://github.com/Dtanguy/sysInfo.git" --save
+npm i "git+https://github.com/Dtanguy/sys-info.git" --save
 ```
 
 ## Usage
