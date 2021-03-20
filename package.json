@@ -1,21 +1,21 @@
 {
-  "name": "sysInfo",
+  "name": "sys-info",
   "version": "1.0.0",
   "description": "",
-  "main": "sysInfo.js",
+  "main": "sys-info.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Dtanguy/sysInfo.git"
+    "url": "git+https://github.com/Dtanguy/sys-info.git"
   },
   "author": "Dtanguy",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Dtanguy/sysInfo/issues"
+    "url": "https://github.com/Dtanguy/sys-info/issues"
   },
-  "homepage": "https://github.com/Dtanguy/sysInfo#readme",
+  "homepage": "https://github.com/Dtanguy/sys-info#readme",
   "dependencies": {
     "diskspace": "^2.0.0",
     "fd-diskspace": "^1.0.0",
