@@ -7,6 +7,9 @@ pack up of different call for get system data.
 npm i "git+https://github.com/Dtanguy/sys-info.git" --save
 ```
 
+https://www.npmjs.com/package/usb
+Libusb is included as a submodule. On Linux, you'll need libudev to build libusb. On Ubuntu/Debian: sudo apt-get install build-essential libudev-dev
+
 ## Usage
 
 You can put an option parameter in init() for choice what to enable/disable.
