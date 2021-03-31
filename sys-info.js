@@ -40,7 +40,6 @@ var option = {
 	ping	: true,
 	temp	: true,
 	os		: true,
-	piv		: true,
 	usb		: true,
 	disk	: true,
 	network	: true,
@@ -206,7 +205,6 @@ function updateHard(){
 	updateSelected('network');
 	updateSelected('usb');
 	updateSelected('os');
-	updateSelected('piv');
 	updateSelected('disk');
 	updateSelected('process');
 	updateSelected('modem');
@@ -285,16 +283,28 @@ function updateSelected(name, cb){
 			if(cb){
 				cb(heavy.general.hostname);
 			}
-		}
-		
-		// Pi version
-		else if(name=='piv'){
-			var cpu_info = fs.readFileSync(CPU_INFO_FILE_PATH).toString();
-			cpu_info = cpu_info.slice(cpu_info.lastIndexOf("Revision") , cpu_info.length);
-			revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
-			heavy.general.piv = ras_tab[revision];
+	
+			// Pi version	
+			let cpu_info, revision;
+			try{		
+				cpu_info = fs.readFileSync(CPU_INFO_FILE_PATH).toString();
+				if (cpu_info){
+					cpu_info = cpu_info.slice(cpu_info.lastIndexOf("Revision") , cpu_info.length);
+					if (cpu_info){
+						revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
+					}	
+				}
+			}catch(e){}
+			
+			if(revision){				
+				heavy.general.hosttype = ras_tab[revision];
+			}else if(heavy.general.hostname && heavy.general.hostname.indexOf('vps')>-1){
+				heavy.general.hosttype = 'OVH_VPS';
+			}else{
+				heavy.general.hosttype = 'Unknown';
+			}			
 			if(cb){
-				cb(heavy.general.piv);
+				cb(heavy.general.hosttype);
 			}
 		}
 		
