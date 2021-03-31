@@ -20,6 +20,8 @@ try{
 	console.error('Fail load SerialPort');
 }
 var psList = require('ps-list');
+const publicIp = require('public-ip');
+const ipLocation = require("iplocation");
 
 // Color console
 /*
@@ -224,8 +226,14 @@ function updateSelected(name, cb){
 			wifiScann(function(data, err){
 				if(err){
 					disable('wifi');
-				}else if(data){
-					heavy.wifi = data;
+				}else if(data){					
+					let tmp  = data.map(function(elm) {
+					  var o = Object.assign({}, elm);
+					  o.macAddress = elm.mac;
+					  delete o.mac;
+					  return o;
+					});
+					heavy.wifi = tmp;
 				}
 				if(cb){
 					cb(heavy.wifi);
@@ -235,13 +243,19 @@ function updateSelected(name, cb){
 		
 		// Network
 		else if(name=='network'){
+			let tmp = {};
+			if(heavy.network.publicIp){
+				tmp = heavy.network.publicIp;
+			}
+			
 			heavy.network = {};	
 			var net = os.networkInterfaces();
 			for (var co in net) {	
 				if(co != "lo"){
 					heavy.network[co] = net[co];
 				}
-			}
+			}			
+			heavy.network.publicIp = tmp;
 			if(cb){
 				cb(heavy.network);
 			}
@@ -278,7 +292,7 @@ function updateSelected(name, cb){
 			var cpu_info = fs.readFileSync(CPU_INFO_FILE_PATH).toString();
 			cpu_info = cpu_info.slice(cpu_info.lastIndexOf("Revision") , cpu_info.length);
 			revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
-			heavy.piv = ras_tab[revision];
+			heavy.general.piv = ras_tab[revision];
 			if(cb){
 				cb(heavy.general.piv);
 			}
@@ -357,22 +371,30 @@ function updateSelected(name, cb){
 		
 		// VGPS
 		else if(name=='vgps'){
-			var toSend = {
-				considerIp: true,
-				wifiAccessPoints: heavy.wifi,
-			};             
-			googleGeoloc(toSend, function (data, err) {  
-				//console.log(data);
-				if(err){
-					disable('vgps');
-				}else if(data){                
-					data.timestamp = Date.now();
-					heavy.vgps = data;
-				} 
-				if(cb){
-					cb(heavy.vgps);
-				}				
-			});
+			
+			if(Object.entries(heavy.wifi).length > 0 && config.key){
+				//console.log("WIFI DETECTED");
+				var toSend = {
+					considerIp: true,
+					wifiAccessPoints: heavy.wifi,
+				};			
+				googleGeoloc(toSend, function (data, err) {  
+					if(err){
+						ipGeoloc(heavy.general.publicIp); 
+						//disable('vgps');
+					}else if(data){                
+						data.timestamp = Date.now();
+						data.type = 'vgps_GAPI';
+						heavy.vgps = data;
+					} 
+					if(cb){
+						cb(heavy.vgps);
+					}			
+				});
+			} else {
+				//console.log("NO WIFI DETECTED");
+				ipGeoloc(heavy.general.publicIp);
+			}
 		}
 		
 		// BATTERIE
@@ -612,8 +634,34 @@ function googleGeoloc(params, callback) {
 	  
       callback (data, err);
     });
-  }
-  
+ }
+ 
+ function ipGeoloc(params, callback) {
+	(async () => {
+		let ip = await publicIp.v4();
+		//let ipv6 = await publicIp.v6();
+		//console.log(ip);
+		heavy.network.publicIp = [{
+			address: ip,
+			//ipv6: ipv6
+		}];
+					
+		//try{
+			//let tmp = await ipLocation(ip);
+			//console.log(tmp);
+		//}catch(e){}
+					
+		heavy.vgps = {
+			"location": {
+				"lat": 48.856614,
+				"lng": 2.3522219
+		    },
+	        "accuracy": -1,
+			"timestamp": Date.now(),
+			type: 'vgps_ipLoc'
+		};
+	})();
+ }
 
 
 /***********************************************************************************************************/
