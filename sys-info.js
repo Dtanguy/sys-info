@@ -47,7 +47,9 @@ var option = {
 	modem	: true,
 	serial	: true,
 	android	: true,
-	gps		: true		
+	gps		: true,
+	vgps	: true,
+	batterie: true,
 };
 
 function init(option_){
@@ -164,10 +166,7 @@ function updateMonito(){
 /**************************************************************************************************************/
 
 var heavy = {	
-	sysUptime: -1,
-	platform: -1,
-	hostname: -1,
-	piv: -1,
+	general: {},
 	process: [],
 	lsusb: [],
 	network: {},
@@ -175,8 +174,10 @@ var heavy = {
 	wifi: {},
 	modem: {},
 	serial: {},
+	android: {},
 	gps: {},
-	android: {}
+	vgps: {},
+	batterie: {}
 };
 
 var hardInterval;
@@ -208,8 +209,10 @@ function updateHard(){
 	updateSelected('process');
 	updateSelected('modem');
 	updateSelected('serial');
-	updateSelected('android');
 	updateSelected('gps');	
+	updateSelected('vgps');	
+	updateSelected('batterie');	
+	updateSelected('android');
 }
 
 function updateSelected(name, cb){	
@@ -262,11 +265,11 @@ function updateSelected(name, cb){
 		
 		// OS
 		else if(name=='os'){			
-			heavy.sysUptime = osu.sysUptime();
-			heavy.platform = os.platform();
-			heavy.hostname = os.hostname();
+			heavy.general.sysUptime = osu.sysUptime();
+			heavy.general.platform = os.platform();
+			heavy.general.hostname = os.hostname();
 			if(cb){
-				cb(heavy.hostname);
+				cb(heavy.general.hostname);
 			}
 		}
 		
@@ -277,7 +280,7 @@ function updateSelected(name, cb){
 			revision = cpu_info.slice(cpu_info.indexOf(":")+1 , cpu_info.indexOf("\n")).trim();
 			heavy.piv = ras_tab[revision];
 			if(cb){
-				cb(heavy.piv);
+				cb(heavy.general.piv);
 			}
 		}
 		
@@ -348,22 +351,33 @@ function updateSelected(name, cb){
 		}
 		
 		// GPS
-		else if(name=='gps'){
+		else if(name=='gps'){			
+			disable('gps');				
+		}
+		
+		// VGPS
+		else if(name=='vgps'){
 			var toSend = {
 				considerIp: true,
 				wifiAccessPoints: heavy.wifi,
 			};             
 			googleGeoloc(toSend, function (data, err) {  
+				//console.log(data);
 				if(err){
-					disable('gps');
+					disable('vgps');
 				}else if(data){                
 					data.timestamp = Date.now();
-					heavy.gps = data;
+					heavy.vgps = data;
 				} 
 				if(cb){
-					cb(heavy.gps);
+					cb(heavy.vgps);
 				}				
 			});
+		}
+		
+		// BATTERIE
+		else if(name=='batterie'){			
+			disable('batterie');				
 		}
 		
 	});
@@ -566,24 +580,23 @@ function getModemStat(modemNbP, id_, model_, cb){
 
 
 /***********************************************************************************************************/
-/* GPS *****************************************************************************************************/
+/* VGPS ****************************************************************************************************/
 /***********************************************************************************************************/
 const httpreq = require ('httpreq');
 
 var config = {
-    key: 'Yourkey',
+    key: process.env.GAPI_KEY,
     timeout: 5000
 };
 
 function googleGeoloc(params, callback) {
-
     const options = {
       method: 'POST',
       url: 'https://www.googleapis.com/geolocation/v1/geolocate?key=' + config.key,
       json: params,
       timeout: config.timeout
     };
-  
+	
     httpreq.doRequest (options, (err, res) => {
       var data = res && res.body || '';
   
